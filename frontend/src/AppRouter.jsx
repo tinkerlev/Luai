@@ -6,28 +6,36 @@ import UploadPage from "./pages/UploadPage";
 import PrivateRoute from "./components/PrivateRoute";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/Home";
+import Footer from "./components/Footer";
+import { ThemeToggle } from "./theme/theme-toggle";
 
 export default function AppRouter() {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/Home" element={<HomePage />} />
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow">
+        <ThemeToggle />
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/Home" element={<HomePage />} />
 
-        <Route
-          path="/scan"
-          element={
-            <PrivateRoute>
-              <UploadPage />
-            </PrivateRoute>
-          }
-        />
+            <Route
+              path="/scan"
+              element={
+                <PrivateRoute>
+                  <UploadPage />
+                </PrivateRoute>
+              }
+            />
 
-        <Route path="*" element={<Navigate to="/Home" replace />} />
-      </Routes>
+            <Route path="*" element={<Navigate to="/Home" replace />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </Router>
   );
 }

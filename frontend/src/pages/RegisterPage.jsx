@@ -1,7 +1,9 @@
 // file: RegisterPage.jsx
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Icon } from '@iconify/react';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -18,6 +20,7 @@ export default function RegisterPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const navigate = useNavigate();
 
   const sanitizeInput = (input) => input.replace(/[<>"']/g, "").normalize("NFKC");
@@ -45,6 +48,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!acceptTerms) {
+      setErrorMsg("Please accept the terms and conditions");
+      return;
+    }
     setErrorMsg("");
 
     const COOLDOWN_MS = 10000;
@@ -119,85 +126,262 @@ export default function RegisterPage() {
     }
   };
 
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
+  const staggerItems = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const formItem = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white border border-gray-200 shadow-lg rounded-xl p-8 w-full max-w-md"
+    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4 py-10">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="w-full max-w-lg"
       >
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">📝 Creat an account</h2>
+        <div className="card w-full bg-base-100 shadow-xl border border-base-300">
+          <div className="card-body">
+            <div className="flex justify-center mb-2">
+              <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center">
+                <Icon icon="mdi:account-plus" className="w-8 h-8 text-[oklch(var(--s))]dary"/>
+              </div>
+            </div>
 
-        {[
-          ["firstName", "First Name"],
-          ["lastName", "Last Name"],
-          ["email", "Email"],
-          ["phone", "Phone Number"],
-          ["profession", "Profession"],
-          ["company", "Company (if applicable)"]
-        ].map(([key, label]) => (
-          <input
-            key={key}
-            type="text"
-            name={key}
-            placeholder={label}
-            value={form[key]}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md mb-3 focus:ring-2 focus:ring-blue-500"
-            maxLength={50}
-            required={key !== "company"}
-            autoComplete="off"
-          />
-        ))}
+            <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-[oklch(var(--s))] to-[oklch(var(--a))] bg-clip-text text-transparent">
+              Create Your Account
+            </h2>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-md mb-3 focus:ring-2 focus:ring-blue-500"
-          required
-          maxLength={100}
-          autoComplete="new-password"
-        />
-
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-md mb-3 focus:ring-2 focus:ring-blue-500"
-          required
-          maxLength={100}
-          autoComplete="new-password"
-        />
-
-        <select
-          name="plan"
-          value={form.plan}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-md mb-4"
-        >
-          <option value="monthly">📆 Monthly Plan</option>
-          <option value="yearly">📅 Yearly Plan</option>
-          <option value="business">🏢 Business Plan</option>
-        </select>
-
-        {errorMsg && (
-          <p className="text-red-600 text-sm text-center mb-4">{errorMsg}</p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-6 rounded-md text-white font-medium transition duration-200 ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "🔄 Registering..." : "✅ Register"}
-        </button>
-      </form>
+            <form onSubmit={handleSubmit}>
+              <motion.div variants={staggerItems}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <motion.div variants={formItem} className="form-control">
+                    <label className="label">
+                      <span className="label-text">First Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      placeholder="First Name"
+                      value={form.firstName}
+                      onChange={handleChange}
+                      className="input input-bordered w-full"
+                      maxLength={50}
+                      required
+                      autoComplete="off"
+                    />
+                  </motion.div>
+                  
+                  <motion.div variants={formItem} className="form-control">
+                    <label className="label">
+                      <span className="label-text">Last Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      placeholder="Last Name"
+                      value={form.lastName}
+                      onChange={handleChange}
+                      className="input input-bordered w-full"
+                      maxLength={50}
+                      required
+                      autoComplete="off"
+                    />
+                  </motion.div>
+                </div>
+                
+                <motion.div variants={formItem} className="form-control mb-4">
+                  <label className="label">
+                    <span className="label-text">Email</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    maxLength={50}
+                    required
+                    autoComplete="off"
+                  />
+                </motion.div>
+                
+                <motion.div variants={formItem} className="form-control mb-4">
+                  <label className="label">
+                    <span className="label-text">Phone Number</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="phone"
+                    placeholder="Phone Number"
+                    value={form.phone}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    maxLength={15}
+                    required
+                    autoComplete="off"
+                  />
+                </motion.div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <motion.div variants={formItem} className="form-control">
+                    <label className="label">
+                      <span className="label-text">Profession</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="profession"
+                      placeholder="Profession"
+                      value={form.profession}
+                      onChange={handleChange}
+                      className="input input-bordered w-full"
+                      maxLength={50}
+                      required
+                      autoComplete="off"
+                    />
+                  </motion.div>
+                  
+                  <motion.div variants={formItem} className="form-control">
+                    <label className="label">
+                      <span className="label-text">Company (Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="company"
+                      placeholder="Company"
+                      value={form.company}
+                      onChange={handleChange}
+                      className="input input-bordered w-full"
+                      maxLength={50}
+                      autoComplete="off"
+                    />
+                  </motion.div>
+                </div>
+                
+                <motion.div variants={formItem} className="form-control mb-4">
+                  <label className="label">
+                    <span className="label-text">Password</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    required
+                    maxLength={100}
+                    autoComplete="new-password"
+                  />
+                  <label className="label">
+                    <span className="label-text-alt">Must be at least 12 characters with letters, numbers and symbols</span>
+                  </label>
+                </motion.div>
+                
+                <motion.div variants={formItem} className="form-control mb-4">
+                  <label className="label">
+                    <span className="label-text">Confirm Password</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    required
+                    maxLength={100}
+                    autoComplete="new-password"
+                  />
+                </motion.div>
+                
+                <motion.div variants={formItem} className="form-control mb-4">
+                  <label className="label">
+                    <span className="label-text">Subscription Plan</span>
+                  </label>
+                  <select
+                    name="plan"
+                    value={form.plan}
+                    onChange={handleChange}
+                    className="select select-bordered w-full"
+                  >
+                    <option value="monthly">📆 Monthly Plan</option>
+                    <option value="yearly">📅 Yearly Plan</option>
+                    <option value="business">🏢 Business Plan</option>
+                  </select>
+                </motion.div>
+                
+                <motion.div variants={formItem} className="form-control mb-4">
+                  <label className="label cursor-pointer justify-start gap-2">
+                    <input 
+                      type="checkbox" 
+                      className="checkbox checkbox-sm checkbox-secondary" 
+                      checked={acceptTerms}
+                      onChange={() => setAcceptTerms(!acceptTerms)}
+                    />
+                    <span className="label-text">I agree to the Terms of Service and Privacy Policy</span>
+                  </label>
+                </motion.div>
+              </motion.div>
+              
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="alert alert-error mb-4"
+                >
+                  <Icon icon="mdi:alert-circle" className="h-6 w-6" />
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+              
+              <button
+                type="submit"
+                disabled={loading || !acceptTerms}
+                className={`btn btn-secondary w-full ${loading ? "loading" : ""}`}
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="loading loading-spinner loading-sm mr-2"></span>
+                    Creating Account...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Icon icon="mdi:account-check" className="mr-2" />
+                    Create Account
+                  </span>
+                )}
+              </button>
+            </form>
+            
+            <div className="divider my-4"></div>
+            
+            <div className="text-center">
+              <p className="text-sm">
+                Already have an account?{" "}
+                <Link to="/login" className="link link-secondary">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

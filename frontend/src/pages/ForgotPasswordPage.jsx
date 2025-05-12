@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Icon } from '@iconify/react';
+import { Link } from "react-router-dom";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -60,41 +63,103 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white border border-gray-200 shadow-md rounded-xl p-8 w-full max-w-md"
+    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="w-full max-w-md"
       >
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          🔑 Forgot Password
-        </h2>
+        <div className="card w-full bg-base-100 shadow-xl border border-base-300">
+          <div className="card-body">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-info/10 flex items-center justify-center">
+                <Icon icon="mdi:key" className="w-8 h-8 text-info"/>
+              </div>
+            </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-4 focus:ring-2 focus:ring-blue-500"
-          required
-          maxLength={100}
-          autoComplete="off"
-        />
-
-        {errorMsg && <p className="text-red-600 text-sm text-center mb-4">{errorMsg}</p>}
-        {message && <p className="text-green-600 text-sm text-center mb-4">{message}</p>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-6 rounded-md text-white font-medium transition duration-200 ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "🔄 Sending..." : "📧 Send Reset Link"}
-        </button>
-      </form>
+            <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-[oklch(var(--p))] to-[oklch(var(--a))] bg-clip-text text-transparent">
+              Password Recovery
+            </h2>
+            
+            <p className="text-center text-base-content/80 mb-6">
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="form-control mb-4">
+                <label className="label">
+                  <span className="label-text">Email Address</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input input-bordered w-full"
+                  required
+                  maxLength={100}
+                  autoComplete="off"
+                />
+              </div>
+              
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="alert alert-error mb-4"
+                >
+                  <Icon icon="mdi:alert-circle" className="h-6 w-6" />
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+              
+              {message && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="alert alert-success mb-4"
+                >
+                  <Icon icon="mdi:check-circle" className="h-6 w-6" />
+                  <span>{message}</span>
+                </motion.div>
+              )}
+              
+              <button
+                type="submit"
+                disabled={loading}
+                className={`btn btn-primary w-full ${loading ? "loading" : ""}`}
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="loading loading-spinner loading-sm mr-2"></span>
+                    Sending...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Icon icon="mdi:email-send" className="mr-2" />
+                    Send Reset Link
+                  </span>
+                )}
+              </button>
+            </form>
+            
+            <div className="divider my-4"></div>
+            
+            <Link to="/login" className="btn btn-ghost btn-sm">
+              <Icon icon="mdi:arrow-left" className="mr-2" />
+              Back to Login
+            </Link>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

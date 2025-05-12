@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Icon } from '@iconify/react';
+import { ThemeToggle } from "../theme/theme-toggle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -9,6 +12,7 @@ export default function LoginPage() {
   const [lockoutUntil, setLockoutUntil] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [passwordScore, setPasswordScore] = useState(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,6 +81,10 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      setErrorMsg("Please accept the terms and conditions");
+      return;
+    }
     if (loading) return;
 
     if (lockoutUntil && new Date() < lockoutUntil) {
@@ -159,81 +167,149 @@ export default function LoginPage() {
     }
   };
 
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-xl p-8 w-full max-w-md border border-gray-200"
+    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          🔐 Secure Login
-        </h2>
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-4 focus:ring-2 focus:ring-blue-500"
-          required
-          autoComplete="username"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => handlePasswordChange(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-2 focus:ring-2 focus:ring-blue-500"
-          required
-          autoComplete="current-password"
-          onPaste={(e) => e.preventDefault()}
-        />
-
-        {passwordScore !== null && (
-          <p className={`text-xs mb-2 text-center ${
-            passwordScore >= 5 ? "text-green-600" : "text-yellow-600"
-          }`}>
-            Password strength: {passwordScore}/5
-          </p>
-        )}
-
-        {errorMsg && (
-          <p className="text-red-600 text-sm text-center mb-4">{errorMsg}</p>
-        )}
-
-        {timeLeft > 0 && (
-          <p className="text-orange-500 text-sm text-center mb-4">
-            ⏳ Locked out. Please wait {formatTimeLeft(timeLeft)} before trying again.
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading || timeLeft > 0}
-          className={`w-full py-3 px-6 rounded-md text-white font-medium transition duration-200 ${
-            loading || timeLeft > 0
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "🔄 Logging in..." : "➡️ Login"}
-        </button>
-
-        <div className="mt-4 text-sm text-center text-gray-600">
-          <p>
-            Don't have an account? {" "}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Register here
-            </Link>
-          </p>
-          <p className="mt-1">
-            <Link to="/forgot-password" className="text-blue-600 hover:underline">
-              Forgot your password?
-            </Link>
-          </p>
+        <div className="card w-full bg-base-100 shadow-xl border border-base-300">
+          <div className="card-body">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Icon icon="mdi:lock" className="w-8 h-8 text-[oklch(var(--p))]"/>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-[oklch(var(--s))] to-[oklch(var(--a))] bg-clip-text text-transparent">
+              Secure Login
+            </h2>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="form-control mb-4">
+                <label className="label">
+                  <span className="label-text">Email</span>
+                </label>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input input-bordered w-full"
+                  required
+                  autoComplete="username"
+                />
+              </div>
+              
+              <div className="form-control mb-2">
+                <label className="label">
+                  <span className="label-text">Password</span>
+                </label>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  className="input input-bordered w-full"
+                  required
+                  autoComplete="current-password"
+                  onPaste={(e) => e.preventDefault()}
+                />
+              </div>
+              
+              {passwordScore !== null && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mb-4"
+                >
+                  <progress 
+                    className={`progress w-full ${
+                      passwordScore >= 5 ? "progress-success" : 
+                      passwordScore >= 3 ? "progress-warning" : "progress-error"
+                    }`} 
+                    value={passwordScore} 
+                    max="5"
+                  ></progress>
+                  <p className="text-xs mt-1 text-center">
+                    Password strength: {passwordScore}/5
+                  </p>
+                </motion.div>
+              )}
+              
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="alert alert-error mb-4"
+                >
+                  <Icon icon="mdi:alert-circle" className="h-6 w-6" />
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+              
+              {timeLeft > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="alert alert-warning mb-4"
+                >
+                  <Icon icon="mdi:clock-outline" className="h-6 w-6" />
+                  <span>Locked out. Please wait {formatTimeLeft(timeLeft)} before trying again.</span>
+                </motion.div>
+              )}
+              
+              <div className="form-control mb-4">
+                <label className="label cursor-pointer justify-start gap-2">
+                  <input 
+                    type="checkbox" 
+                    className="checkbox checkbox-sm checkbox-primary" 
+                    checked={termsAccepted}
+                    onChange={() => setTermsAccepted(!termsAccepted)}
+                  />
+                  <span className="label-text">I accept the Terms and Conditions</span>
+                </label>
+              </div>
+              
+              <button
+                type="submit"
+                disabled={loading || timeLeft > 0 || !termsAccepted}
+                className={`btn btn-primary w-full ${loading ? "loading" : ""}`}
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="loading loading-spinner loading-sm mr-2"></span>
+                    Logging in
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Icon icon="mdi:login" className="mr-2" />
+                    Login
+                  </span>
+                )}
+              </button>
+            </form>
+            
+            <div className="divider my-4">OR</div>
+            
+            <div className="text-sm text-center space-y-2">
+              <Link to="/register" className="link link-primary block hover:underline">
+                Create a new account
+              </Link>
+              <Link to="/forgot-password" className="link link-secondary block hover:underline">
+                Forgot your password?
+              </Link>
+            </div>
+          </div>
         </div>
-      </form>
+      </motion.div>
     </div>
   );
 }

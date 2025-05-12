@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Icon } from '@iconify/react';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -10,6 +12,7 @@ export default function ResetPasswordPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordScore, setPasswordScore] = useState(0);
   const navigate = useNavigate();
 
   const sanitizeInput = (input) => input.replace(/[<>"']/g, "").normalize("NFKC");
@@ -23,6 +26,17 @@ export default function ResetPasswordPage() {
       /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd) &&
       !/\s/.test(pwd)
     );
+  };
+
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    let score = 0;
+    if (value.length >= 12) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[a-z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) score++;
+    setPasswordScore(score);
   };
 
   const handleSubmit = async (e) => {
@@ -72,51 +86,141 @@ export default function ResetPasswordPage() {
     }
   };
 
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white border border-gray-200 shadow-md rounded-xl p-8 w-full max-w-md"
+    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="w-full max-w-md"
       >
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          🔒 Set New Password
-        </h2>
-
-        <input
-          type="password"
-          placeholder="New Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-3 focus:ring-2 focus:ring-blue-500"
-          required
-          maxLength={100}
-          autoComplete="new-password"
-        />
-
-        <input
-          type="password"
-          placeholder="Confirm New Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-4 focus:ring-2 focus:ring-blue-500"
-          required
-          maxLength={100}
-          autoComplete="new-password"
-        />
-
-        {errorMsg && <p className="text-red-600 text-sm text-center mb-4">{errorMsg}</p>}
-        {successMsg && <p className="text-green-600 text-sm text-center mb-4">{successMsg}</p>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-6 rounded-md text-white font-medium transition duration-200 ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "🔄 Resetting..." : "✅ Set New Password"}
-        </button>
-      </form>
+        <div className="card w-full bg-base-100 shadow-xl border border-base-300">
+          <div className="card-body">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+                <Icon icon="mdi:shield-key" className="w-8 h-8 text-success"/>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-success to-accent bg-clip-text text-transparent">
+              Reset Your Password
+            </h2>
+            
+            <p className="text-center text-base-content/80 mb-6">
+              Please create a strong, unique password for your account.
+            </p>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="form-control mb-4">
+                <label className="label">
+                  <span className="label-text">New Password</span>
+                </label>
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={password}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  className="input input-bordered w-full"
+                  required
+                  maxLength={100}
+                  autoComplete="new-password"
+                />
+                {password && (
+                  <div className="mt-2">
+                    <progress 
+                      className={`progress w-full ${
+                        passwordScore >= 5 ? "progress-success" : 
+                        passwordScore >= 3 ? "progress-warning" : "progress-error"
+                      }`} 
+                      value={passwordScore} 
+                      max="5"
+                    ></progress>
+                    <label className="label">
+                      <span className="label-text-alt">Password strength: {passwordScore}/5</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+              
+              <div className="form-control mb-4">
+                <label className="label">
+                  <span className="label-text">Confirm New Password</span>
+                </label>
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`input input-bordered w-full ${
+                    confirmPassword && confirmPassword !== password ? "input-error" : ""
+                  }`}
+                  required
+                  maxLength={100}
+                  autoComplete="new-password"
+                />
+                {confirmPassword && confirmPassword !== password && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">Passwords don't match</span>
+                  </label>
+                )}
+              </div>
+              
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="alert alert-error mb-4"
+                >
+                  <Icon icon="mdi:alert-circle" className="h-6 w-6" />
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+              
+              {successMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="alert alert-success mb-4"
+                >
+                  <Icon icon="mdi:check-circle" className="h-6 w-6" />
+                  <span>{successMsg}</span>
+                </motion.div>
+              )}
+              
+              <button
+                type="submit"
+                disabled={loading || password !== confirmPassword}
+                className={`btn btn-success w-full ${loading ? "loading" : ""}`}
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="loading loading-spinner loading-sm mr-2"></span>
+                    Setting Password...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Icon icon="mdi:check-shield" className="mr-2" />
+                    Set New Password
+                  </span>
+                )}
+              </button>
+            </form>
+            
+            <div className="divider my-4"></div>
+            
+            <div className="text-center">
+              <Link to="/login" className="link link-secondary">
+                Return to login
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

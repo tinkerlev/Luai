@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import UploadForm from "../components/UploadForm";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Icon } from '@iconify/react';
 
 export default function App() {
   const [results, setResults] = useState([]);
@@ -15,48 +17,132 @@ export default function App() {
     navigate("/login");
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col items-center justify-start p-4">
-      <header className="bg-white/90 backdrop-blur border border-gray-200 shadow-xl rounded-2xl p-8 w-full max-w-2xl mx-auto mt-12 text-center animate-fade-in">
-        <div className="text-5xl mb-4">🔒</div>
-        <h1 className="text-3xl font-semibold text-gray-800 mb-2 tracking-tight">Nuvai Scan</h1>
-        <p className="text-gray-600 text-base sm:text-lg mb-4">
-          Scan your code and detect vulnerabilities — fast, easy, and secure.
-        </p>
-        <button
-          onClick={handleLogout}
-          className="text-sm text-red-500 underline hover:text-red-600 mb-4"
-        >
-          🔓 Logout
-        </button>
-        <UploadForm onScan={handleScanResult} />
-      </header>
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+  
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const item = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
 
-      {/* Display scan results here */}
-      <div className="mt-10 w-full max-w-2xl">
-        {results.map((r, idx) => (
-          <div key={idx} className="bg-white shadow p-4 rounded mb-4">
-            <h3 className="font-semibold text-gray-800">{r.fileName}</h3>
-            {r.result.error ? (
-              <p className="text-red-600">❌ Failed to scan</p>
-            ) : r.result.vulnerabilities?.length ? (
-              <ul className="list-disc ml-5 text-sm text-gray-700">
-                {r.result.vulnerabilities.map((v, i) => (
-                  <li key={i}>
-                    <strong>[{v.severity.toUpperCase()}]</strong> {v.title}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-green-600">✅ No vulnerabilities found</p>
-            )}
-            {r.result.explanation && (
-              <p className="mt-2 text-gray-600 italic text-sm">
-                💡 <span dangerouslySetInnerHTML={{ __html: r.result.explanation }}></span>
+  return (
+    <div className="min-h-screen bg-base-200 py-10">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+          className="max-w-3xl mx-auto"
+        >
+          <div className="card bg-base-100 shadow-xl border border-base-300 mb-8">
+            <div className="card-body text-center">
+              <div className="flex justify-center mb-2">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Icon icon="mdi:shield-scan" className="w-8 h-8 text-[oklch(var(--p))]"/>
+                </div>
+              </div>
+              
+              <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[oklch(var(--p))] to-accent bg-clip-text text-transparent">
+                Nuvai Code Scanner
+              </h1>
+              <p className="text-base-content/70 mb-6">
+                Upload your code files for instant security analysis and vulnerability detection
               </p>
-            )}
+              
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-sm btn-outline btn-error gap-2"
+                >
+                  <Icon icon="mdi:logout" />
+                  Logout
+                </button>
+              </div>
+              
+              <UploadForm onScan={handleScanResult} />
+            </div>
           </div>
-        ))}
+
+          {results.length > 0 && (
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className="mb-8"
+            >
+              <h2 className="text-2xl font-bold mb-4 text-center">Scan Results</h2>
+              
+              {results.map((r, idx) => (
+                <motion.div 
+                  key={idx} 
+                  className="card bg-base-100 shadow-md mb-4"
+                  variants={item}
+                >
+                  <div className="card-body">
+                    <h3 className="card-title text-lg font-medium flex items-center gap-2">
+                      <Icon icon="mdi:file-code" className="text-[oklch(var(--p))]" />
+                      {r.fileName}
+                    </h3>
+                    
+                    {r.result.error ? (
+                      <div className="alert alert-error">
+                        <Icon icon="mdi:close-circle" className="h-6 w-6" />
+                        <span>Failed to scan</span>
+                      </div>
+                    ) : r.result.vulnerabilities?.length ? (
+                      <div>
+                        <div className="alert alert-warning mb-2">
+                          <Icon icon="mdi:alert" className="h-6 w-6" />
+                          <span>{r.result.vulnerabilities.length} vulnerabilities detected</span>
+                        </div>
+                        <ul className="space-y-2">
+                          {r.result.vulnerabilities.map((v, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <div className={`badge ${
+                                v.severity === 'high' ? 'badge-error' : 
+                                v.severity === 'medium' ? 'badge-warning' : 'badge-info'
+                              } badge-sm self-center`}>
+                                {v.severity.toUpperCase()}
+                              </div>
+                              <span>{v.title}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="alert alert-success">
+                        <Icon icon="mdi:check-circle" className="h-6 w-6" />
+                        <span>No vulnerabilities found</span>
+                      </div>
+                    )}
+                    
+                    {r.result.explanation && (
+                      <div className="mt-4 bg-base-200 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon icon="mdi:lightbulb" className="text-warning" />
+                          <span className="font-medium">Explanation</span>
+                        </div>
+                        <p className="text-sm" dangerouslySetInnerHTML={{ __html: r.result.explanation }}></p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     </div>
   );
