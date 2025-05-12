@@ -36,9 +36,6 @@ tmp/
 *.db
 *.sqlite3
 
-frontend/tailwindcss
-*.css
-!src/**/*.css
 
 frontend/node_modules/
 node_modules/
