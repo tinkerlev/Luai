@@ -36,6 +36,10 @@ tmp/
 *.db
 *.sqlite3
 
+frontend/tailwindcss
+*.css
+!src/**/*.css
+
 node_modules/
 build/
 dist/
